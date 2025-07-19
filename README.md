@@ -2,6 +2,8 @@
 
 This repository demonstrates "side-channel" integration bugs in microservices - the kind of hidden dependencies that break when AI assistants refactor code without full system context.
 
+> **Important**: This is a monorepo for demo convenience, but it simulates **cross-repository changes** where an AI assistant only sees one service at a time. In reality, these would be separate repositories owned by different teams, making the hidden dependencies even more dangerous.
+
 ## The Architecture
 
 This project contains three microservices that demonstrate common integration failure patterns:
@@ -38,7 +40,7 @@ This project contains three microservices that demonstrate common integration fa
 
 This experiment demonstrates how changing a database column type can break downstream services that read from database replicas.
 
-**The AI Refactor:** An AI assistant was asked to "improve data precision by changing the fare_amount column from a float to a decimal."
+**The AI Refactor:** An AI assistant working only on the Rider-Fares-Service repository was asked to "improve data precision by changing the fare_amount column from a float to a decimal." The AI had no visibility into the Analytics service or its database replica dependency.
 
 ### Experience the Breakage:
 
@@ -59,17 +61,19 @@ This experiment demonstrates how changing a database column type can break downs
 
 **What breaks:** The `analytics.service.test.js` will fail because:
 - The AI correctly changed `fare_amount` from `FLOAT` to `DECIMAL(10, 2)`
-- Sequelize now returns decimal values as strings (e.g., `"10.50"`)
+- In PostgreSQL/MySQL, Sequelize returns decimal values as strings (e.g., `"10.50"`) to preserve precision
 - The Analytics service tries to add these strings: `"10.50" + "20.25"` = `"10.5020.25"`
 - The test expects `30.75` but gets string concatenation instead
 
-**Why it's dangerous:** This is a silent failure that would corrupt data in production. The AI had no visibility into the Analytics service reading from the database replica.
+> **Database Note:** SQLite doesn't exhibit the same DECIMAL-to-string behavior as PostgreSQL/MySQL. For this demo, we simulate the real-world PostgreSQL behavior where DECIMAL fields return as strings to preserve precision.
+
+**Why it's dangerous:** This is a silent failure that would corrupt data in production. The AI, working only within the Rider-Fares-Service repository, had no way to discover the Analytics service reading from the database replica in a completely separate codebase.
 
 ## Experiment 2: The Removed Event Field Bug
 
 This experiment shows how removing an "unused" event field can silently break downstream consumers.
 
-**The AI Refactor:** An AI assistant was asked to "clean up the TripCompleted event by removing unused fields."
+**The AI Refactor:** An AI assistant working only on the Rider-Fares-Service repository was asked to "clean up the TripCompleted event by removing unused fields." From the AI's limited view of a single repository, the `driverTier` field appeared completely unused.
 
 ### Experience the Breakage:
 
@@ -90,8 +94,8 @@ This experiment shows how removing an "unused" event field can silently break do
 
 **What breaks:** The `payouts.service.test.js` will fail because:
 - The AI removed the `driverTier` field from the TripCompleted event
-- The field wasn't used by the Fares service itself, so it seemed "unused"
-- The Payouts service relies on this field to calculate driver bonuses
+- The field wasn't used by the Fares service itself, so it seemed "unused" within that single repository
+- The Payouts service (in a separate repository) relies on this field to calculate driver bonuses
 - Without it, payouts are calculated incorrectly
 
 **Why it's dangerous:** This demonstrates the "tolerant reader" pattern backfiring. The consuming service silently handles missing fields, masking the integration bug until it's discovered in production.
@@ -99,9 +103,9 @@ This experiment shows how removing an "unused" event field can silently break do
 ## The Pattern
 
 Both failures follow the same pattern:
-1. An AI makes a perfectly reasonable change in isolation
-2. Local tests pass completely  
-3. A hidden dependency breaks in a different service
+1. An AI makes a perfectly reasonable change when viewing only a single repository
+2. Local tests within that repository pass completely  
+3. A hidden dependency breaks in a different service/repository
 4. The breakage is often silent and hard to detect
 
 ## Key Takeaways
@@ -125,6 +129,8 @@ Both failures follow the same pattern:
 ├── migrations/                 # Database schema
 └── db/                        # SQLite database file
 ```
+
+**Demo Architecture Note**: In reality, these would be three separate Git repositories, possibly owned by different teams (Fares, Analytics, and Payments teams). The shared database and event infrastructure would be managed separately. This monorepo structure is purely for demo convenience - it allows you to easily reproduce the cross-repository integration failures that would occur when an AI assistant works on isolated codebases.
 
 The project uses SQLite and file-based event queues to run without external dependencies, making it easy to reproduce these integration bugs locally.
 
