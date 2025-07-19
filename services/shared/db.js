@@ -17,7 +17,7 @@ const Fare = sequelize.define('Fare', {
     autoIncrement: true,
   },
   fare_amount: {
-    type: DataTypes.FLOAT,
+    type: DataTypes.DECIMAL(10, 2),
     allowNull: false,
   },
 }, {

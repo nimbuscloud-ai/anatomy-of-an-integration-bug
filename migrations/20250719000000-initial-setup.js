@@ -10,7 +10,7 @@ module.exports = {
         allowNull: false
       },
       fare_amount: {
-        type: Sequelize.FLOAT,
+        type: Sequelize.DECIMAL(10, 2),
         allowNull: false,
       },
       createdAt: {
