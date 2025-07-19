@@ -6,7 +6,8 @@
   "scripts": {
     "setup": "rm -f ./db/development.sqlite && npx sequelize-cli db:migrate",
     "test": "jest",
-    "test:watch": "jest --watchAll"
+    "test:watch": "jest --watchAll",
+    "demo": "node demo.js"
   },
   "keywords": ["microservices", "integration", "testing", "bugs"],
   "author": "",

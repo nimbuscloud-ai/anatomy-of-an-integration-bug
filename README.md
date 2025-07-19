@@ -28,6 +28,12 @@ This project contains three microservices that demonstrate common integration fa
    ```
    All tests should pass on the `main` branch.
 
+4. **Try the interactive demo:**
+   ```bash
+   npm run demo
+   ```
+   This shows the services working together correctly.
+
 ## Experiment 1: The Database Type Change Bug
 
 This experiment demonstrates how changing a database column type can break downstream services that read from database replicas.
