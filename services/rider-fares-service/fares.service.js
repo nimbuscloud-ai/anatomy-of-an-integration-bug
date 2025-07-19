@@ -8,8 +8,7 @@ class FaresService {
     });
 
     EventQueue.publish('TripCompleted', {
-      fareId: fare.id,
-      driverTier: driverTier
+      fareId: fare.id
     });
 
     return fare;

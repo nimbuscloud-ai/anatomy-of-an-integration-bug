@@ -39,6 +39,5 @@ describe('FaresService', () => {
     expect(events).toHaveLength(1);
     expect(events[0].eventName).toBe('TripCompleted');
     expect(events[0].payload.fareId).toBe(fare.id);
-    expect(events[0].payload.driverTier).toBe('A');
   });
 });

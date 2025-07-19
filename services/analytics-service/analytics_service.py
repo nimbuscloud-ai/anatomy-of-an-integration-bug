@@ -22,12 +22,15 @@ class AnalyticsService:
             # Read all fares from the database
             cursor.execute("SELECT fare_amount FROM fares")
             fares = cursor.fetchall()
-            
-            # Calculate total
-            total = 0
+
+            total = None
+
             for fare_row in fares:
                 fare_amount = fare_row[0]
-                total += fare_amount
+                if total is None:
+                    total = fare_amount
+                else:
+                    total += fare_amount
             
             conn.close()
             return total

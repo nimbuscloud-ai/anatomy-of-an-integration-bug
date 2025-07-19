@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 class EventQueue {
-  static EVENTS_FILE = '/tmp/events.jsonl';
+  static EVENTS_FILE = process.env.EVENTS_FILE || '/tmp/events.jsonl';
   
   static publish(eventName, payload) {
     const event = {
