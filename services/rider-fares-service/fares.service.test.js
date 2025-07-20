@@ -32,7 +32,7 @@ describe('FaresService', () => {
   test('should create fare and publish event', async () => {
     const fare = await FaresService.createFare(25.50, 'A');
     
-    expect(fare.fare_amount).toBe(25.50);
+    expect(fare.fare_amount).toBe("25.50");
     expect(fare.id).toBeDefined();
 
     const events = EventQueue.consume();

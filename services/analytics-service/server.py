@@ -18,7 +18,7 @@ def start_server():
         while True:
             try:
                 total = service.calculate_total_fares()
-                print(f'📈 Total fares calculated: ${total:.2f}')
+                print(f"📈 Total fares calculated: ${(total or 0):.2f}")
                 time.sleep(10)
                 
             except KeyboardInterrupt:

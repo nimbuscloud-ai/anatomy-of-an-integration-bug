@@ -13,4 +13,5 @@ echo "Watch the logs to see integration behavior..."
 echo "Press Ctrl+C to stop all services"
 echo ""
 
+docker-compose --profile demo down -v
 docker-compose --profile demo up --remove-orphans --renew-anon-volumes --force-recreate

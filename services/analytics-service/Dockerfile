@@ -9,7 +9,6 @@ RUN pip install -r requirements.txt
 # Copy service code
 COPY . .
 
-# Make the script executable
-RUN chmod +x analytics_service.py test_analytics_service.py
+WORKDIR /app/services/analytics-service
 
-CMD ["python3", "analytics_service.py"]
+CMD ["python3", "server.py"]

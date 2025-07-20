@@ -85,8 +85,6 @@ services:
       - .:/app
       - /app/node_modules
       - /tmp:/tmp
-    depends_on:
-      - setup
     command: sh -c "npm test && cd services/analytics-service && python3 -m pytest test_analytics_service.py -v"
 
 volumes:
