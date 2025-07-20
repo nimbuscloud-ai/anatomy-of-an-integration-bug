@@ -1,0 +1,94 @@
+services:
+  # Database initialization service  
+  setup:
+    profiles:
+      - demo
+    build:
+      context: .
+      dockerfile: Dockerfile.setup
+    environment:
+      - DB_PATH=/shared/db/development.sqlite
+      - EVENTS_FILE=/tmp/events.jsonl
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - shared_db:/shared/db
+      - shared_events:/tmp
+    
+  # Rider Fares Service (Node.js)
+  rider-fares-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - shared_db:/shared/db
+      - shared_events:/tmp
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+    command: sh -c "node services/rider-fares-service/server.js"
+    environment:
+      - DB_PATH=/shared/db/development.sqlite
+      - EVENTS_FILE=/tmp/events.jsonl
+    profiles:
+      - demo
+    
+  # Analytics Service (Python) 
+  analytics-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    volumes:
+      - .:/app
+      - shared_db:/shared/db
+      - shared_events:/tmp
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+    command: sh -c "python3 services/analytics-service/server.py"
+    environment:
+      - DB_PATH=/shared/db/development.sqlite
+      - EVENTS_FILE=/tmp/events.jsonl
+      - PYTHONUNBUFFERED=1
+    profiles:
+      - demo
+      
+  # Payouts Service (Node.js)
+  payouts-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.test  
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - shared_db:/shared/db
+      - shared_events:/tmp
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+    command: sh -c "node services/payouts-service/server.js"
+    environment:
+      - EVENTS_FILE=/tmp/events.jsonl
+    profiles:
+      - demo
+    
+  # Test runner - runs all unit tests
+  test:
+    profiles:
+      - test
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /tmp:/tmp
+    depends_on:
+      - setup
+    command: sh -c "npm test && cd services/analytics-service && python3 -m pytest test_analytics_service.py -v"
+
+volumes:
+  shared_db:
+  shared_events:

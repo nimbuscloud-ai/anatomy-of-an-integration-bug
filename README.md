@@ -8,33 +8,33 @@ This repository demonstrates "side-channel" integration bugs in microservices - 
 
 This project contains three microservices that demonstrate common integration failure patterns:
 
-- **Rider-Fares-Service**: Calculates and stores ride costs, publishes trip events
-- **Analytics-Service**: Reads directly from the Fares database replica for ETL jobs  
-- **Payouts-Service**: Consumes trip events to calculate driver payouts
+- **Rider-Fares-Service** (Node.js): Calculates and stores ride costs, publishes trip events
+- **Analytics-Service** (Python): Reads directly from the Fares database replica for ETL jobs  
+- **Payouts-Service** (Node.js): Consumes trip events to calculate driver payouts
+
+## Prerequisites
+
+You only need **Docker and Docker Compose** installed. No Node.js, Python, or other dependencies required locally.
 
 ## Quick Start
 
-1. **Install dependencies:**
+1. **Clone the repository:**
    ```bash
-   npm install
+   git clone https://github.com/nimbuscloud-ai/anatomy-of-an-integration-bug.git
+   cd anatomy-of-an-integration-bug
    ```
 
-2. **Initialize the database:**
+2. **Run tests to verify everything works:**
    ```bash
-   npm run setup
-   ```
-
-3. **Run tests to verify everything works:**
-   ```bash
-   npm test
+   ./scripts/test.sh
    ```
    All tests should pass on the `main` branch.
 
-4. **Try the interactive demo:**
+3. **Try the interactive demo:**
    ```bash
-   npm run demo
+   ./scripts/demo.sh
    ```
-   This shows the services working together correctly.
+   This starts all three services and shows their logs in real-time.
 
 ## Experiment 1: The Database Type Change Bug
 
@@ -49,17 +49,18 @@ This experiment demonstrates how changing a database column type can break downs
    git checkout feature/ai-db-refactor
    ```
 
-2. **Apply the new database migration:**
+2. **Run the tests:**
    ```bash
-   npm run setup
+   ./scripts/test.sh
+   ```
+   Note: This should pass.
+
+3. **Run the demo:**
+   ```bash
+   ./scripts/demo.sh
    ```
 
-3. **Run the tests:**
-   ```bash
-   npm test
-   ```
-
-**What breaks:** The `analytics.service.test.js` will fail because:
+**What breaks:** During the demo, the `analytics.service.test.js` will fail because:
 - The AI correctly changed `fare_amount` from `FLOAT` to `DECIMAL(10, 2)`
 - In PostgreSQL/MySQL, Sequelize returns decimal values as strings (e.g., `"10.50"`) to preserve precision
 - The Analytics service tries to add these strings: `"10.50" + "20.25"` = `"10.5020.25"`
@@ -82,17 +83,18 @@ This experiment shows how removing an "unused" event field can silently break do
    git checkout feature/ai-event-refactor
    ```
 
-2. **Ensure clean database state:**
+2. **Run the tests:**
    ```bash
-   npm run setup
+   ./scripts/test.sh
+   ```
+   Note: This should pass.
+
+3. **Run the demo:**
+   ```bash
+   ./scripts/demo.sh
    ```
 
-3. **Run the tests:**
-   ```bash
-   npm test
-   ```
-
-**What breaks:** The `payouts.service.test.js` will fail because:
+**What breaks:** During the demo, the `payouts.service.test.js` will fail because:
 - The AI removed the `driverTier` field from the TripCompleted event
 - The field wasn't used by the Fares service itself, so it seemed "unused" within that single repository
 - The Payouts service (in a separate repository) relies on this field to calculate driver bonuses
@@ -132,8 +134,8 @@ Both failures follow the same pattern:
 
 **Demo Architecture Note**: In reality, these would be three separate Git repositories, possibly owned by different teams (Fares, Analytics, and Payments teams). The shared database and event infrastructure would be managed separately. This monorepo structure is purely for demo convenience - it allows you to easily reproduce the cross-repository integration failures that would occur when an AI assistant works on isolated codebases.
 
-The project uses SQLite and file-based event queues to run without external dependencies, making it easy to reproduce these integration bugs locally.
+The project uses Docker, SQLite and file-based event queues to run without external dependencies, making it easy to reproduce these integration bugs locally.
 
 ---
 
-*This demo accompanies the blog post: "The Anatomy of an Integration Bug: It's Not Just Your APIs"*
+*This demo accompanies the blog post: ["The Anatomy of an Integration Bug: It's Not Just Your APIs"*](https://nimbusai.dev/blog/the-anatomy-of-an-integration-bug-its-not-just-your-apis)
