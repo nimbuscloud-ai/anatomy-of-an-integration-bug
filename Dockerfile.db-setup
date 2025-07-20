@@ -1,0 +1,18 @@
+FROM node:18-slim
+
+WORKDIR /app
+
+# Copy package files and install dependencies
+COPY package*.json ./
+COPY .sequelizerc ./
+RUN npm install
+
+# Copy configuration and migration files
+COPY config/ ./config/
+COPY migrations/ ./migrations/
+
+# Set environment variable for database path
+ENV DB_PATH=/shared/db/development.sqlite
+
+# Command will be provided by docker-compose
+CMD ["npm", "run", "setup"]
