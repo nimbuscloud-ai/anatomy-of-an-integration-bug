@@ -1,18 +1,31 @@
 const { sequelize } = require('../shared/db');
 const FaresService = require('./fares.service');
 const EventQueue = require('../shared/event-queue');
+const fs = require('fs');
 
 describe('FaresService', () => {
+  const TEST_EVENTS_FILE = '/tmp/test_fares_events.jsonl';
+  const originalEventsFile = EventQueue.EVENTS_FILE;
+  
   beforeAll(async () => {
     await sequelize.sync({ force: true });
   });
   
   beforeEach(async () => {
     await sequelize.truncate({ cascade: true, force: true });
-    EventQueue.clear();
+    EventQueue.EVENTS_FILE = TEST_EVENTS_FILE;
+    if (fs.existsSync(TEST_EVENTS_FILE)) {
+      fs.unlinkSync(TEST_EVENTS_FILE);
+    }
+
+    fs.writeFileSync(TEST_EVENTS_FILE, '');
   });
 
   afterAll(async () => {
+    EventQueue.EVENTS_FILE = originalEventsFile;
+    if (fs.existsSync(TEST_EVENTS_FILE)) {
+      fs.unlinkSync(TEST_EVENTS_FILE);
+    }
     await sequelize.close();
   });
 

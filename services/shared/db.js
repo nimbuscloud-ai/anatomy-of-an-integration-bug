@@ -1,9 +1,12 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const path = require('path');
 
+// Use environment variable for database path, default to local path
+const dbPath = process.env.DB_PATH || path.join(__dirname, '../../db/development.sqlite');
+
 const sequelize = new Sequelize({
   dialect: 'sqlite',
-  storage: path.join(__dirname, '../../db/development.sqlite'),
+  storage: dbPath,
   logging: false
 });
 

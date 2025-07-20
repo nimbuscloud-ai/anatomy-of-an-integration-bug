@@ -4,7 +4,7 @@
   "description": "A demonstration of side-channel integration bugs in microservices",
   "main": "index.js",
   "scripts": {
-    "setup": "rm -f ./db/development.sqlite && npx sequelize-cli db:migrate",
+    "setup": "echo \"Running rm -f $DB_PATH $EVENTS_FILE && npx sequelize-cli db:migrate\" && rm -f $DB_PATH $EVENTS_FILE && npx sequelize-cli db:migrate",
     "test": "jest",
     "test:watch": "jest --watchAll",
     "demo": "node demo.js"
@@ -22,6 +22,7 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "testMatch": ["**/*.test.js"]
+    "testMatch": ["**/*.test.js"],
+    "silent": false
   }
 }
